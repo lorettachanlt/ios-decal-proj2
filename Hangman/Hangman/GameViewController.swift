@@ -8,27 +8,90 @@
 
 import UIKit
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController, UITextFieldDelegate {
 
+    @IBOutlet var startoverButton: UIButton!
     @IBOutlet var incorrectGuessesLabel: UILabel!
     @IBOutlet var hangmanImageView: UIImageView!
     @IBOutlet var phraseLabel: UILabel!
-    @IBOutlet var correctButton: UIButton!
-    @IBOutlet var incorrectButton: UIButton!
-    @IBOutlet var textField: UITextField!
-    var currentCharIndex = 0
-    var numOfIncorrectGuesses = 0
+    @IBOutlet var guessField: UITextField!
+    @IBOutlet var guessButton: UIButton!
     var phrase = String()
     var blankSpaces = String()
+    var numOfIncorrectGuesses = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        self.guessField.delegate = self
         // Do any additional setup after loading the view.
+        setUpGame()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    func textField(textField: UITextField,
+        shouldChangeCharactersInRange range: NSRange,
+        replacementString string: String) -> Bool {
+        return textField.text?.characters.count < 1;
+        
+    }
+    
+    @IBAction func guessButtonPressed() {
+        let inputChar = guessField.text?.characters.first
+        var blankSpacesArray = Array(blankSpaces.characters)
+        print(String(inputChar).uppercaseString)
+        if (guessField.text!.isEmpty == false) {
+            if (phrase.lowercaseString.characters.contains(inputChar!)) {
+                for var i = 0; i < phrase.characters.count; ++i {
+                    let char = phrase.lowercaseString[phrase.startIndex.advancedBy(i)]
+                    if (char == inputChar) {
+                        blankSpacesArray[i*2] = char
+                    }
+                }
+                blankSpaces = String(blankSpacesArray)
+                if (blankSpaces.characters.contains("_") == false) {
+                    let alert = UIAlertController(title: "Congratulations!", message: "You Win", preferredStyle: UIAlertControllerStyle.Alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
+                    guessButton.enabled = false
+                    startoverButton.hidden = false
+                }
+            } else {
+                incorrectGuessesLabel.text = incorrectGuessesLabel.text! + guessField.text!.uppercaseString + " "
+                let imageName = "hangman" + String(numOfIncorrectGuesses+2) + ".gif"
+                if (numOfIncorrectGuesses < 5) {
+                    hangmanImageView.image = UIImage(named: imageName)!
+                } else {
+                    hangmanImageView.image = UIImage(named: imageName)!
+                    let alert = UIAlertController(title: "You Lose", message: "The phrase is: " + phrase + ". Try Again!", preferredStyle: UIAlertControllerStyle.Alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
+                    guessButton.enabled = false
+                    startoverButton.hidden = false
+
+                }
+                blankSpaces = String(blankSpacesArray)
+                numOfIncorrectGuesses += 1
+            }
+        
+            phraseLabel.text = blankSpaces
+            guessField.text = ""
+        }
+        
+    }
+    
+    @IBAction func startOver() {
+        setUpGame()
+    }
+    
+    func setUpGame() {
         let hangmanPhrases = HangmanPhrases()
         phrase = hangmanPhrases.getRandomPhrase()
-        
-    
+        blankSpaces = ""
+        incorrectGuessesLabel.text = "Incorrect guesses: "
         for var i = 0; i < phrase.characters.count; ++i {
             let char = phrase[phrase.startIndex.advancedBy(i)]
             if char != " " {
@@ -38,49 +101,12 @@ class GameViewController: UIViewController {
             }
         }
         print(phrase)
-        print(blankSpaces)
+        startoverButton.hidden = true
         phraseLabel.text = blankSpaces
+        guessButton.enabled = true
+        let imageName = "hangman1.gif"
+        hangmanImageView.image = UIImage(named: imageName)!
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    @IBAction func enterCorrectLetter() {
-        if (currentCharIndex < phrase.characters.count) {
-            if (phrase[phrase.startIndex.advancedBy(currentCharIndex)] == " ") {
-                currentCharIndex += 1
-            }
-            var blankSpacesArray = Array(blankSpaces.characters)
-            blankSpacesArray[currentCharIndex*2] = phrase[phrase.startIndex.advancedBy(currentCharIndex)]
-            blankSpaces = String(blankSpacesArray)
-            phraseLabel.text = blankSpaces
-            currentCharIndex += 1
-        }
-
-    }
-    
-    @IBAction func enterIncorrectLetter() {
-        if (textField.text!.isEmpty == false) {
-            incorrectGuessesLabel.text = incorrectGuessesLabel.text! + textField.text!.uppercaseString + " "
-        }
-        let imageName = "hangman" + String(numOfIncorrectGuesses+2) + ".gif"
-        if (numOfIncorrectGuesses < 6) {
-            hangmanImageView.image = UIImage(named: imageName)!
-        }
-        numOfIncorrectGuesses += 1
-    }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
     
 
 }
