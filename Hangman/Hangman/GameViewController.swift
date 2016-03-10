@@ -48,16 +48,16 @@ class GameViewController: UIViewController, UITextFieldDelegate {
                 for var i = 0; i < phrase.characters.count; ++i {
                     let char = phrase.lowercaseString[phrase.startIndex.advancedBy(i)]
                     if (char == inputChar) {
-                        blankSpacesArray[i*2] = char
+                        blankSpacesArray[i] = char
                     }
                 }
                 blankSpaces = String(blankSpacesArray)
-                if (blankSpaces.characters.contains("_") == false) {
+                if (blankSpaces.characters.contains("-") == false) {
                     let alert = UIAlertController(title: "Congratulations!", message: "You Win", preferredStyle: UIAlertControllerStyle.Alert)
                     alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
                     self.presentViewController(alert, animated: true, completion: nil)
                     guessButton.enabled = false
-                    startoverButton.hidden = false
+                    
                 }
             } else {
                 incorrectGuessesLabel.text = incorrectGuessesLabel.text! + guessField.text!.uppercaseString + " "
@@ -70,7 +70,6 @@ class GameViewController: UIViewController, UITextFieldDelegate {
                     alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
                     self.presentViewController(alert, animated: true, completion: nil)
                     guessButton.enabled = false
-                    startoverButton.hidden = false
 
                 }
                 blankSpaces = String(blankSpacesArray)
@@ -95,15 +94,15 @@ class GameViewController: UIViewController, UITextFieldDelegate {
         for var i = 0; i < phrase.characters.count; ++i {
             let char = phrase[phrase.startIndex.advancedBy(i)]
             if char != " " {
-                blankSpaces += "_ "
+                blankSpaces += "-"
             } else {
-                blankSpaces += "  "
+                blankSpaces += " "
             }
         }
         print(phrase)
-        startoverButton.hidden = true
         phraseLabel.text = blankSpaces
         guessButton.enabled = true
+        numOfIncorrectGuesses = 0
         let imageName = "hangman1.gif"
         hangmanImageView.image = UIImage(named: imageName)!
     }
